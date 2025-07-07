@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.HttpLogging;
+using QRCodeGenerator;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddOpenApi();
+builder.Services.AddScoped<IQRGenerator, QRGenerate>();
 
 builder.Services.AddHttpLogging(opts =>
 opts.LoggingFields = HttpLoggingFields.RequestProperties); 
@@ -21,6 +23,14 @@ if (app.Environment.IsDevelopment())
 app.UseHttpLogging();
 app.UseHttpsRedirection();
 
-app.MapGet("/", () => "Hello World!");
+app.MapGet("/help", () => "Hello World!");
+
+app.MapGet("/qr", async (string content, IQRGenerator qrGenerator) =>
+{
+    var fileName = $"{Guid.NewGuid()}.png";
+    var qrCodeFile = await qrGenerator.GeneratorQRAsync(content, fileName);
+    return Results.File(qrCodeFile.OpenReadStream(), qrCodeFile.ContentType, fileName);
+});
+
 
 app.Run();

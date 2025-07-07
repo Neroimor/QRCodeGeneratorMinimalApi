@@ -46,7 +46,7 @@ namespace QRCodeGenerator
 
         private async Task<IFormFile> ConvertToIFormFileAsync(byte[] imageBytes, string fileName)
         {
-            using var stream = new MemoryStream(imageBytes);
+            var stream = new MemoryStream(imageBytes);
             var formFile = new FormFile(stream, 0, stream.Length, "file", fileName)
             {
                 Headers = new HeaderDictionary(),
