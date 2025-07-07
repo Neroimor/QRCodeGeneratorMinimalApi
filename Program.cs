@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.HttpLogging;
+using QRCodeGenerator;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddOpenApi();
+builder.Services.AddScoped<IQRGenerator, QRGenerate>();
 
 builder.Services.AddHttpLogging(opts =>
 opts.LoggingFields = HttpLoggingFields.RequestProperties); 
@@ -21,9 +23,24 @@ if (app.Environment.IsDevelopment())
 app.UseHttpLogging();
 app.UseHttpsRedirection();
 
-app.MapGet("/", () => "Hello World!");
-app.MapGet("/person", () => new Person("Andrew", "Lock")); 
+app.MapGet("/help", () =>
+    """
+    ƒл€ получени€ QR-кода введите в URL браузера, Postman или на frontend адрес такого формата:
+    https://localhost:7138/qr?content=https://www.youtube.com/watch?v=dQw4w9WgXcQ
+
+    √де:
+    - https://localhost:7138/qr Ч конечна€ точка
+    - content Ч query-параметр, содержащий текст или ссылку, которую вы хотите закодировать
+    """);
+
+
+app.MapGet("/qr", async (string content, IQRGenerator qrGenerator) =>
+{
+    var fileName = $"{Guid.NewGuid()}.png";
+    var qrCodeFile = await qrGenerator.GeneratorQRAsync(content, fileName);
+    return Results.File(qrCodeFile.OpenReadStream(), qrCodeFile.ContentType);
+
+});
+
 
 app.Run();
-
-public record Person(string FirstName, string LastName);
