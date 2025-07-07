@@ -22,8 +22,5 @@ app.UseHttpLogging();
 app.UseHttpsRedirection();
 
 app.MapGet("/", () => "Hello World!");
-app.MapGet("/person", () => new Person("Andrew", "Lock")); 
 
 app.Run();
-
-public record Person(string FirstName, string LastName);
